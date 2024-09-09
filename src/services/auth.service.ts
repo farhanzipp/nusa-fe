@@ -11,7 +11,7 @@ export class AuthService {
     }
 
     login = async (email: string, password: string) => {   
-        return this.instance.post("auth/signin", {
+        return this.instance.post("auth/login", {
             email,
             password
         })
