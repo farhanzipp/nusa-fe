@@ -24,6 +24,7 @@ export default function LoginForm() {
 
     const onSubmit = async (data: TSignInSchema) => {
         //TODO: handle login
+        console.log('hello')
         setServerError(null);
 
         try {
