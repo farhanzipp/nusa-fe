@@ -5,7 +5,7 @@ export const useLogin = () => {
     const login = async (username: string, password: string) => {
         const user = await authService.login(username, password);
         if (user) {
-            Cookies.set("token", JSON.stringify(user.token));
+            Cookies.set("token", JSON.stringify(user));
             return user;
         }
     };
