@@ -1,34 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDecodedToken } from "./util/jwt-decode";
-import { authRoutes, protectedRoutes } from "./router/routes";
+import { admin_routes, super_admin_routes, user_routes } from "./router/routes";
 
 export function middleware(request: NextRequest) {
     const cookieData = request.cookies.get('token')?.value;
-    const tokenData= getDecodedToken(cookieData as string);
-
-    if (!tokenData) return NextResponse.next();
-
-    if (
-        protectedRoutes.includes(request.nextUrl.pathname) &&
-        (!cookieData || Date.now() >= tokenData.exp * 1000)
-    ) {  
-        request.cookies.delete('token');
-        const response = NextResponse.redirect(new URL("/login", request.url));
-        
-        return response;
+    
+    if(!cookieData) {
+        return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    const adminRoles = ['ADMIN', 'SUPER_ADMIN'];
-    const isAdmin = tokenData?.roles.some((role: string) => adminRoles.includes(role));
-    const isUser = tokenData?.roles.some((role: string) => "USER" === role);
+    const accessToken = JSON.parse(cookieData).access_token;
+    const decodedCookie = getDecodedToken(accessToken);
 
-    if (authRoutes.includes(request.nextUrl.pathname)) {
-        if (isAdmin) {
-            return NextResponse.redirect(new URL("/dashboard", request.url));
-        }else if (isUser) {
-            return NextResponse.redirect(new URL("/psb", request.url));
-        }
+    const roles = decodedCookie?.roles || [];
+    const pathname = request.nextUrl.pathname;
+
+    if (roles.includes("SUPER_ADMIN") && super_admin_routes.includes(pathname)) {
+        return NextResponse.next();
     }
 
-    return NextResponse.next();
+    if (roles.includes("ADMIN") && admin_routes.includes(pathname)){
+        return NextResponse.next();
+    }
+    
+    if (roles.includes("USER") && user_routes.includes(pathname)){
+        return NextResponse.next();
+    }
+
+    return NextResponse.redirect(new URL('/unauthorized', request.url));
+}
+
+export const config = {
+    matcher: ['/dashboard/:path*', '/user/:path*']
 }

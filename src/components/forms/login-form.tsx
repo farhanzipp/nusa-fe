@@ -1,39 +1,43 @@
 "use client"
 
-import { useLogin } from '@/hooks/auth/useLogin';
 import { signInSchema } from '@/lib/signin-schema';
 import { TSignInSchema } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react'
 import { useForm } from 'react-hook-form';
+import Cookies from 'js-cookie';
+import { getDecodedToken } from '@/util/jwt-decode';
+import { redirectByRole } from '@/util/route-by-role';
 
 export default function LoginForm() {
     const {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
+        setError
     } = useForm<TSignInSchema>({
         resolver: zodResolver(signInSchema),
     });
 
-    const { login } = useLogin();
     const router = useRouter();
-
-    const [serverError, setServerError] = useState<string | null>(null);
-
     const onSubmit = async (data: TSignInSchema) => {
-        //TODO: handle login
-        console.log('hello')
-        setServerError(null);
-
+        
         try {
-            const user = await login(data.email, data.password);
-            router.push("/dashboard");
-        } catch (error) {
-            setServerError("Invalid email or password");
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+                email: data.email,
+                password: data.password
+            })
+            const tokenData = response.data;
+            Cookies.set("token", JSON.stringify(tokenData), {expires: 3});
+
+            const decodedToken = getDecodedToken(tokenData.access_token);
+            redirectByRole(decodedToken, router);
+        } catch (error: any) {
+            console.log(error);
+            setError("password", { type: "custom", message: error.response.data.message });
         }
-    }
+    };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -51,7 +55,9 @@ export default function LoginForm() {
             className='py-2'
         />
         {errors.password && <p className='text-red-500'>{errors.password.message}</p>}
-        {serverError && <p className='text-red-500'>{serverError}</p>}
+        {errors.root?.serverError && (
+          <p className="text-sm text-red-500">{errors.root.serverError.message}</p>
+        )}
         <button
             type="submit"
             disabled={isSubmitting}

@@ -1,3 +1,11 @@
-export const protectedRoutes = ["/dashboard"];
-export const authRoutes = ["/login"];
-export const publicRoutes = ["/about", "/"];
+export const super_admin_routes = [
+    "/dashboard","/user"
+]
+
+export const admin_routes = [
+    "/dashboard"
+]
+
+export const user_routes = [
+    "/user"
+]
