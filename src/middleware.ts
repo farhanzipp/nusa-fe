@@ -4,8 +4,8 @@ import { admin_routes, super_admin_routes, user_routes } from "./router/routes";
 
 export function middleware(request: NextRequest) {
     const cookieData = request.cookies.get('token')?.value;
-    
-    if(!cookieData) {
+
+    if (!cookieData) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
@@ -15,15 +15,19 @@ export function middleware(request: NextRequest) {
     const roles = decodedCookie?.roles || [];
     const pathname = request.nextUrl.pathname;
 
-    if (roles.includes("SUPER_ADMIN") && super_admin_routes.includes(pathname)) {
+    const isRouteMatch = (routes: string[]) => {
+        return routes.some(route => pathname.startsWith(route.replace(':path*', '')));
+    };
+
+    if (roles.includes("SUPER_ADMIN") && isRouteMatch(super_admin_routes)) {
         return NextResponse.next();
     }
 
-    if (roles.includes("ADMIN") && admin_routes.includes(pathname)){
+    if (roles.includes("ADMIN") && isRouteMatch(admin_routes)) {
         return NextResponse.next();
     }
-    
-    if (roles.includes("USER") && user_routes.includes(pathname)){
+
+    if (roles.includes("USER") && isRouteMatch(user_routes)) {
         return NextResponse.next();
     }
 
@@ -33,3 +37,4 @@ export function middleware(request: NextRequest) {
 export const config = {
     matcher: ['/dashboard/:path*', '/user/:path*']
 }
+
