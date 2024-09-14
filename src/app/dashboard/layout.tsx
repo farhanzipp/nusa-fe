@@ -26,12 +26,12 @@ export default function DashboardLayout({ children }: LayoutChildrenProps) {
     useCurrentUser();
     return (
     <>
-        <div className="p-7">
-            <div className='flex flex-col space-y-8 md:flex-row md:space-x-12 md:space-y-0'>
-                <aside className='hidden md:block -mx-4 md:w-1/5'>
+        <div>
+            <div className='flex flex-col md:flex-row '>
+                <aside className='hidden px-2 py-4 md:block md:w-1/5'>
                     <SidebarNav items={sidebarNavItems} />
                 </aside>
-                <div className='flex-1 lg:max-w-2xl'>
+                <div className='flex-1 lg:max-w-2xl h-screen overflow-y-auto'>
                     {children}
                 </div>
             </div>

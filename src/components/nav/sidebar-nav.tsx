@@ -18,7 +18,7 @@ export default function SidebarNav({ items, ...props }: SidebarNavProps) {
         <nav className={cn("flex flex-col h-full justify-between")}
           {...props}
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col flex-1">
             {items.map((item) => (
               <Link
                 key={item.href}
